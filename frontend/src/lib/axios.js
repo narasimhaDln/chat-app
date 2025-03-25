@@ -2,7 +2,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 
 const axiosInstance = axios.create({
-  baseURL: import.meta.env.MODE === "development" ? "http://localhost:5006/api" : "/api",
+  baseURL: import.meta.env.MODE === "development" ? "https://chat-app-2-2fai.onrender.com/api" : "/api",
   withCredentials: true,
   timeout: 15000, // 15 second timeout
 });
