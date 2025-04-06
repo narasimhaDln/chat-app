@@ -3,7 +3,7 @@ import { axiosInstance } from "../lib/axios.js";
 import toast from "react-hot-toast";
 import { io } from "socket.io-client";
 
-const BASE_URL = import.meta.env.MODE === "development" ? "https://chat-app-2-2fai.onrender.com/" : "/";
+const BASE_URL = '';
 
 export const useAuthStore = create((set, get) => ({
   authUser: null,
@@ -48,7 +48,9 @@ export const useAuthStore = create((set, get) => ({
         toast.error(error.response.data.message || "Signup failed");
       } else if (error.request) {
         // Request made but no response received
-        toast.error("Cannot connect to server. Please check your internet connection.");
+        toast.error(
+          "Cannot connect to server. Please check your internet connection."
+        );
       } else {
         // Something else went wrong
         toast.error("Signup failed. Please try again.");
@@ -73,7 +75,9 @@ export const useAuthStore = create((set, get) => ({
         toast.error(error.response.data.message || "Login failed");
       } else if (error.request) {
         // Request made but no response received
-        toast.error("Cannot connect to server. Please check your internet connection.");
+        toast.error(
+          "Cannot connect to server. Please check your internet connection."
+        );
       } else {
         // Something else went wrong
         toast.error("Login failed. Please try again.");
@@ -100,9 +104,9 @@ export const useAuthStore = create((set, get) => ({
       const res = await axiosInstance.put("/auth/update-profile", data);
       set({ authUser: res.data });
       toast.success("Profile updated successfully");
-      
+
       // Force refresh the users list to update the profile pic in sidebar
-      const useChatStore = (await import('./useChatStore')).useChatStore;
+      const useChatStore = (await import("./useChatStore")).useChatStore;
       useChatStore.getState().getUsers();
     } catch (error) {
       console.log("error in update profile:", error);
@@ -120,7 +124,7 @@ export const useAuthStore = create((set, get) => ({
       query: {
         userId: authUser._id,
       },
-      transports: ['websocket', 'polling'],
+      transports: ["websocket", "polling"],
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
       withCredentials: true,
@@ -132,7 +136,7 @@ export const useAuthStore = create((set, get) => ({
     socket.on("getOnlineUsers", (userIds) => {
       set({ onlineUsers: userIds });
     });
-    
+
     socket.on("connect_error", (err) => {
       console.error("Socket connection error:", err.message);
     });

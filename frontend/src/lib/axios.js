@@ -2,7 +2,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 
 const axiosInstance = axios.create({
-  baseURL: import.meta.env.MODE === "development" ? "https://chat-app-2-2fai.onrender.com/api" : "/api",
+  baseURL: '',
   withCredentials: true,
   timeout: 15000, // 15 second timeout
 });
@@ -13,8 +13,8 @@ axiosInstance.interceptors.response.use(
   (error) => {
     if (!error.response) {
       // Network error (server not available, CORS issues, etc.)
-      console.error('Network Error:', error.message);
-      toast.error('Cannot connect to server. Please try again later.');
+      console.error("Network Error:", error.message);
+      toast.error("Cannot connect to server. Please try again later.");
     }
     return Promise.reject(error);
   }
