@@ -2,7 +2,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 
 const axiosInstance = axios.create({
-  baseURL: '',
+  baseURL: "https://chat-app-2-2fai.onrender.com/api",
   withCredentials: true,
   timeout: 15000, // 15 second timeout
 });
