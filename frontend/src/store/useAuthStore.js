@@ -2,8 +2,7 @@ import { create } from "zustand";
 import { axiosInstance } from "../lib/axios.js";
 import toast from "react-hot-toast";
 import { io } from "socket.io-client";
-
-const BASE_URL = "https://chat-app-6-a2dj.onrender.com";
+import { BACKEND_URL } from "../lib/config.js";
 
 export const useAuthStore = create((set, get) => ({
   authUser: null,
@@ -24,7 +23,7 @@ export const useAuthStore = create((set, get) => ({
       console.error("Error in checkAuth:", error);
       // Only show toast for non-authentication errors
       if (error.response && error.response.status !== 401) {
-        if (error.response.data.message) {
+        if (error.response?.data?.message) {
           toast.error(error.response.data.message);
         }
       }
@@ -120,28 +119,47 @@ export const useAuthStore = create((set, get) => ({
     const { authUser } = get();
     if (!authUser || get().socket?.connected) return;
 
-    const socket = io(BASE_URL, {
-      query: {
-        userId: authUser._id,
-      },
-      transports: ["websocket", "polling"],
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000,
-      withCredentials: true,
-    });
-    socket.connect();
+    try {
+      const socket = io(BACKEND_URL, {
+        query: {
+          userId: authUser._id,
+        },
+        transports: ["websocket", "polling"],
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000,
+        withCredentials: true,
+      });
+      
+      socket.connect();
+      set({ socket: socket });
 
-    set({ socket: socket });
+      socket.on("getOnlineUsers", (userIds) => {
+        set({ onlineUsers: userIds });
+      });
 
-    socket.on("getOnlineUsers", (userIds) => {
-      set({ onlineUsers: userIds });
-    });
+      socket.on("connect_error", (err) => {
+        console.error("Socket connection error:", err.message);
+        toast.error("Chat connection failed. Please refresh the page.");
+      });
 
-    socket.on("connect_error", (err) => {
-      console.error("Socket connection error:", err.message);
-    });
+      socket.on("connect", () => {
+        console.log("Socket connected successfully");
+      });
+
+      socket.on("disconnect", () => {
+        console.log("Socket disconnected");
+      });
+    } catch (error) {
+      console.error("Socket initialization error:", error);
+      toast.error("Failed to initialize chat connection");
+    }
   },
+  
   disconnectSocket: () => {
-    if (get().socket?.connected) get().socket.disconnect();
+    const socket = get().socket;
+    if (socket) {
+      socket.disconnect();
+      set({ socket: null });
+    }
   },
 }));

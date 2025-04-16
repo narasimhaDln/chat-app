@@ -21,8 +21,12 @@ app.use(express.urlencoded({ limit: "50mb", extended: true }));
 app.use(cookieParser());
 app.use(
   cors({
-    origin: true,
+    origin: process.env.NODE_ENV === "production" 
+      ? [process.env.FRONTEND_URL || "https://chat-app-2-2fai.onrender.com"] 
+      : ["http://localhost:5173"],
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 app.get("/", (req, res) => {

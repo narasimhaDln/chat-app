@@ -7,7 +7,9 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: ["https://chat-app-2-2fai.onrender.com"],
+    origin: process.env.NODE_ENV === "production" 
+      ? [process.env.FRONTEND_URL || "https://chat-app-2-2fai.onrender.com"]
+      : ["http://localhost:5173"],
     credentials: true,
   },
 });
@@ -27,6 +29,14 @@ io.on("connection", (socket) => {
 
   // io.emit() is used to send events to all the connected clients
   io.emit("getOnlineUsers", Object.keys(userSocketMap));
+
+  // Add explicit handler for message events
+  socket.on("sendMessage", (messageData) => {
+    const receiverSocketId = getReceiverSocketId(messageData.receiverId);
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("newMessage", messageData);
+    }
+  });
 
   socket.on("disconnect", () => {
     console.log("A user disconnected", socket.id);

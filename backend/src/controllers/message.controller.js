@@ -57,10 +57,18 @@ export const sendMessage = async (req, res) => {
 
     await newMessage.save();
 
+    // Emit socket event to receiver
     const receiverSocketId = getReceiverSocketId(receiverId);
     if (receiverSocketId) {
       io.to(receiverSocketId).emit("newMessage", newMessage);
     }
+
+    // Also emit the sendMessage event for clients subscribing to it
+    io.emit("messageUpdate", {
+      senderId,
+      receiverId,
+      message: newMessage
+    });
 
     res.status(201).json(newMessage);
   } catch (error) {

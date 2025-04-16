@@ -9,6 +9,7 @@ export const useChatStore = create((set, get) => ({
   selectedUser: null,
   isUsersLoading: false,
   isMessagesLoading: false,
+  isSendingMessage: false,
 
   getUsers: async () => {
     set({ isUsersLoading: true });
@@ -16,7 +17,7 @@ export const useChatStore = create((set, get) => ({
       const res = await axiosInstance.get("/messages/users");
       set({ users: res.data });
     } catch (error) {
-      toast.error(error.response.data.message);
+      toast.error(error.response?.data?.message || "Failed to load users");
     } finally {
       set({ isUsersLoading: false });
     }
@@ -28,18 +29,36 @@ export const useChatStore = create((set, get) => ({
       const res = await axiosInstance.get(`/messages/${userId}`);
       set({ messages: res.data });
     } catch (error) {
-      toast.error(error.response.data.message);
+      toast.error(error.response?.data?.message || "Failed to load messages");
     } finally {
       set({ isMessagesLoading: false });
     }
   },
+  
   sendMessage: async (messageData) => {
     const { selectedUser, messages } = get();
+    if (!selectedUser) return;
+    
+    set({ isSendingMessage: true });
     try {
       const res = await axiosInstance.post(`/messages/send/${selectedUser._id}`, messageData);
       set({ messages: [...messages, res.data] });
+      
+      // Also emit through socket for real-time communication
+      const socket = useAuthStore.getState().socket;
+      if (socket?.connected) {
+        socket.emit("sendMessage", {
+          ...res.data,
+          receiverId: selectedUser._id
+        });
+      }
+      
+      return res.data;
     } catch (error) {
-      toast.error(error.response.data.message);
+      toast.error(error.response?.data?.message || "Failed to send message");
+      return null;
+    } finally {
+      set({ isSendingMessage: false });
     }
   },
 
@@ -48,21 +67,56 @@ export const useChatStore = create((set, get) => ({
     if (!selectedUser) return;
 
     const socket = useAuthStore.getState().socket;
+    if (!socket) {
+      console.error("Socket not connected");
+      return;
+    }
+
+    // Unsubscribe first to avoid duplicate listeners
+    get().unsubscribeFromMessages();
 
     socket.on("newMessage", (newMessage) => {
-      const isMessageSentFromSelectedUser = newMessage.senderId === selectedUser._id;
-      if (!isMessageSentFromSelectedUser) return;
+      // Only add messages from the currently selected user
+      const isMessageFromSelectedUser = newMessage.senderId === selectedUser._id;
+      if (!isMessageFromSelectedUser) return;
 
       set({
         messages: [...get().messages, newMessage],
       });
     });
+
+    // Subscribe to general message updates
+    socket.on("messageUpdate", (data) => {
+      const { selectedUser } = get();
+      if (!selectedUser) return;
+      
+      // Check if this update is relevant to current chat
+      if (
+        (data.senderId === selectedUser._id && data.receiverId === useAuthStore.getState().authUser?._id) ||
+        (data.receiverId === selectedUser._id && data.senderId === useAuthStore.getState().authUser?._id)
+      ) {
+        set({
+          messages: [...get().messages, data.message],
+        });
+      }
+    });
   },
 
   unsubscribeFromMessages: () => {
     const socket = useAuthStore.getState().socket;
-    socket.off("newMessage");
+    if (socket) {
+      socket.off("newMessage");
+      socket.off("messageUpdate");
+    }
   },
 
-  setSelectedUser: (selectedUser) => set({ selectedUser }),
+  setSelectedUser: (selectedUser) => {
+    set({ selectedUser });
+    if (selectedUser) {
+      get().getMessages(selectedUser._id);
+      get().subscribeToMessages();
+    } else {
+      get().unsubscribeFromMessages();
+    }
+  },
 }));

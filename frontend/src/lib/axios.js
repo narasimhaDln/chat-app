@@ -1,10 +1,12 @@
 import axios from "axios";
 import toast from "react-hot-toast";
+import { API_URL } from "./config.js";
 
+// Use direct connection to production backend
 const axiosInstance = axios.create({
-  baseURL: "https://chat-app-2-2fai.onrender.com/api",
+  baseURL: API_URL,
   withCredentials: true,
-  timeout: 15000, // 15 second timeout
+  timeout: 30000, // 30 second timeout
 });
 
 // Add response interceptor to handle network errors
