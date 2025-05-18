@@ -12,10 +12,10 @@ MemeHub is a modern, feature-rich social platform for creating, sharing, and dis
 ## 📸 Screenshots
 
 ### Home Page
-![MemeHub Homepage](https://i.imgur.com/HMzHUOt.png)
+![MemeHub Homepage](https://res.cloudinary.com/dbsg3chsc/image/upload/v1747551867/Screenshot_94_o7ujnp.png)
 
 ### Leaderboard
-![MemeHub Leaderboard](https://i.imgur.com/mDfM1lk.png)
+![MemeHub Leaderboard](https://res.cloudinary.com/dbsg3chsc/image/upload/v1747551847/Screenshot_95_ny5pgq.png)
 
 
 Deployment URL-https://rainbow-palmier-251012.netlify.app/
