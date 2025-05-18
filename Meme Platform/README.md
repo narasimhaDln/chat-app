@@ -8,6 +8,16 @@
 
 MemeHub is a modern, feature-rich social platform for creating, sharing, and discovering memes. This frontend-only project showcases advanced React patterns, state management, and responsive design principles using localStorage for data persistence.
 
+
+## 📸 Screenshots
+
+### Home Page
+![MemeHub Homepage](https://i.imgur.com/HMzHUOt.png)
+
+### Leaderboard
+![MemeHub Leaderboard](https://i.imgur.com/mDfM1lk.png)
+
+
 Deployment URL-https://rainbow-palmier-251012.netlify.app/
 Git Hub Link-https://github.com/narasimhaDln/chat-app/tree/main/Meme%20Platform
 
